@@ -18,7 +18,7 @@ import com.vaadin.ui.*;
  *
  * @author mpilone
  */
-@Theme("reindeer")
+@Theme("runo")
 @Push(value = PushMode.DISABLED)
 public class PluploadDemo extends UI {
 
@@ -33,6 +33,7 @@ public class PluploadDemo extends UI {
 
     contentLayout = new VerticalLayout();
     contentLayout.setSpacing(true);
+    contentLayout.setMargin(true);
     setContent(contentLayout);
 
     // Upload 1: Manual submit button.
@@ -57,6 +58,13 @@ public class PluploadDemo extends UI {
     upload.setRuntimes("html4");
     upload.setButtonCaption("HTML4 is so Old");
     addExample("Manual Submit using HTML4", upload);
+
+    // Upload 4: Immediate submit using sleep.
+    upload = buildPlupload();
+    upload.setButtonCaption("Immediate Submit Forced Slow");
+    upload.setReceiver(new SlowReceiver(10));
+    upload.setImmediate(true);
+    addExample("Slow it Down", upload);
 
     // The log text area.
     Label lbl = new Label("<h2>Upload Log</h2>", ContentMode.HTML);
@@ -163,6 +171,38 @@ public class PluploadDemo extends UI {
       return new OutputStream() {
         @Override
         public void write(int b) throws IOException {
+        }
+      };
+    }
+  }
+
+  private class SlowReceiver implements Upload.Receiver {
+
+    private final long sleepMillis;
+
+    public SlowReceiver(long sleepMillis) {
+      this.sleepMillis = sleepMillis;
+    }
+
+    @Override
+    public OutputStream receiveUpload(String filename, String mimeType) {
+      log("Creating receiver output stream for file %s and mime-type %s.",
+          filename, mimeType);
+      return new OutputStream() {
+        private long count = 0;
+
+        @Override
+        public void write(int b) throws IOException {
+          count++;
+
+          if (count % 1024 == 0) {
+            try {
+              Thread.sleep(sleepMillis);
+            }
+            catch (InterruptedException ex) {
+              // ignore
+            }
+          }
         }
       };
     }
