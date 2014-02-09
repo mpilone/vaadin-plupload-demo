@@ -48,14 +48,14 @@ public class PluploadDemo extends UI {
 
     // Upload 3: Manual submit using flash.
     upload = buildPlupload();
-    upload.setRuntimes("flash,silverlight,html4");
+    upload.setRuntimes(Plupload.Runtime.FLASH);
     upload.setImmediate(true);
     upload.setButtonCaption("Flash is Fun");
     addExample("Immediate Submit using Flash", upload);
 
     // Upload 4: Manual submit using html4.
     upload = buildPlupload();
-    upload.setRuntimes("html4");
+    upload.setRuntimes(Plupload.Runtime.HTML4);
     upload.setButtonCaption("HTML4 is so Old");
     addExample("Manual Submit using HTML4", upload);
 
@@ -116,8 +116,8 @@ public class PluploadDemo extends UI {
       @Override
       public void uploadStarted(Plupload.StartedEvent evt) {
         log("Upload of file %s started with content size %d using "
-            + "runtime %s.", evt.getFilename(), evt.getContentLength(), upload.
-            getActiveRuntime());
+            + "runtime %s.", evt.getFilename(), evt.getContentLength(), evt.
+            getRuntime());
 
         upload.setEnabled(false);
       }
