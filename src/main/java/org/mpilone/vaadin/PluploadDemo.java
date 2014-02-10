@@ -153,12 +153,14 @@ public class PluploadDemo extends UI {
 
     @Override
     public void updateProgress(long readBytes, long contentLength) {
-      if (readBytes % 2048 == 0) {
+      if (readBytes % 2048 == 0 || readBytes == contentLength) {
         log("Read %d bytes of %d.", readBytes, contentLength);
       }
 
-      float percent = (float) readBytes / (float) contentLength;
-      bar.setValue(percent);
+      if (contentLength > 0) {
+        float percent = (float) readBytes / (float) contentLength;
+        bar.setValue(percent);
+      }
     }
   }
 
