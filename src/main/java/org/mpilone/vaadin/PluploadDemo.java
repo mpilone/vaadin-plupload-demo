@@ -70,14 +70,53 @@ public class PluploadDemo extends UI {
     upload.setButtonCaption("HTML4 is so Old");
     addExample("Manual Submit using HTML4", upload);
 
-    // Upload 4: Immediate submit using sleep.
+    // Upload 4: Immediate submit forced slow.
     upload = buildPlupload();
-    upload.setButtonCaption("Immediate Submit Forced Slow");
+    upload.setButtonCaption("Slow it Down");
     upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
     upload.setImmediate(true);
-    addExample("Slow it Down", upload);
+    final Plupload _upload4 = upload;
 
-    // The log text area.
+    Button btn = new Button("Interrupt", new Button.ClickListener() {
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        _upload4.interruptUpload();
+      }
+    });
+    addExample("Immediate Submit Forced Slow", upload, btn);
+
+    // Upload 5: Immediate submit HTML4 forced slow.
+    upload = buildPlupload();
+    upload.setRuntimes(Plupload.Runtime.HTML4);
+    upload.setButtonCaption("Slow and Old");
+    upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
+    upload.setImmediate(true);
+    final Plupload _upload5 = upload;
+
+    btn = new Button("Interrupt", new Button.ClickListener() {
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        _upload5.interruptUpload();
+      }
+    });
+    addExample("Immediate Submit Forced Slow using HTML4", upload, btn);
+
+    // Upload 6: Manual submit HTML4 forced slow.
+    upload = buildPlupload();
+    upload.setRuntimes(Plupload.Runtime.HTML4);
+    upload.setButtonCaption("Slow and Manual");
+    upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
+    final Plupload _upload6 = upload;
+
+    btn = new Button("Interrupt", new Button.ClickListener() {
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        _upload6.interruptUpload();
+      }
+    });
+    addExample("Manual Submit Forced Slow using HTML4", upload, btn);
+
+    // Right column (log area)
     VerticalLayout rightColumnLayout = new VerticalLayout();
     rightColumnLayout.setSpacing(true);
     contentLayout.addComponent(rightColumnLayout);
@@ -89,9 +128,17 @@ public class PluploadDemo extends UI {
     logTxt.setRows(35);
     logTxt.setWidth(FULL_WIDTH);
     rightColumnLayout.addComponent(logTxt);
+
+    btn = new Button("Clear Log", new Button.ClickListener() {
+      @Override
+      public void buttonClick(Button.ClickEvent event) {
+        logTxt.setValue("");
+      }
+    });
+    rightColumnLayout.addComponent(btn);
   }
 
-  private void addExample(String title, Plupload upload) {
+  private void addExample(String title, Plupload upload, Component... comps) {
     ProgressBar progressBar = new ProgressBar();
     upload.addProgressListener(new BarProgressListener(progressBar));
 
@@ -102,6 +149,12 @@ public class PluploadDemo extends UI {
     rowLayout.setSpacing(true);
     rowLayout.addComponent(upload);
     rowLayout.addComponent(progressBar);
+
+    if (comps != null) {
+      for (Component c : comps) {
+        rowLayout.addComponent(c);
+      }
+    }
 
     leftColumnLayout.addComponent(rowLayout);
   }
@@ -122,7 +175,7 @@ public class PluploadDemo extends UI {
 
     final Plupload upload = new Plupload();
     upload.setChunkSize(512 * 1024);
-    upload.setMaxRetryBufferSize(upload.getChunkSize() * 2);
+    upload.setMaxRetryBufferSize(upload.getChunkSize());
     upload.setMaxFileSize(500 * 1024 * 1024);
     upload.setMaxRetries(2);
     upload.setButtonCaption("Upload File");
@@ -142,6 +195,13 @@ public class PluploadDemo extends UI {
       @Override
       public void uploadSucceeded(Plupload.SucceededEvent evt) {
         log("Upload of file %s succeeded with size %d.", evt.
+            getFilename(), evt.getLength());
+      }
+    });
+    upload.addFailedListener(new Plupload.FailedListener() {
+      @Override
+      public void uploadFailed(Plupload.FailedEvent evt) {
+        log("Upload of file %s failed with size %d.", evt.
             getFilename(), evt.getLength());
       }
     });
@@ -191,6 +251,10 @@ public class PluploadDemo extends UI {
     }
   }
 
+  /**
+   * A stream that counts the number of bytes writing and can generate an MD5
+   * hash of the data written.
+   */
   private class CountingDigestOutputStream extends OutputStream {
 
     private int count = 0;
@@ -234,14 +298,17 @@ public class PluploadDemo extends UI {
     }
   }
 
+  /**
+   * A stream that sleeps periodically to slow down writes.
+   */
   private class SlowOutputStream extends CountingDigestOutputStream {
 
     @Override
-    public void write(byte[] b) throws IOException {
+    public void write(int b) throws IOException {
 
-      if (getCount() % 1024 == 0) {
+      if (getCount() % 10240 == 0) {
         try {
-          Thread.sleep(100);
+          Thread.sleep(10);
         }
         catch (InterruptedException ex) {
           // ignore
@@ -253,6 +320,9 @@ public class PluploadDemo extends UI {
 
   }
 
+  /**
+   * Receiver that returns a pre-configured output stream.
+   */
   private class DemoReceiver implements Upload.Receiver {
 
     private final CountingDigestOutputStream outstream;
