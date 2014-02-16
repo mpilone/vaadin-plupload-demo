@@ -34,7 +34,7 @@ public class PluploadDemo extends UI {
   @Override
   protected void init(VaadinRequest request) {
 
-    setPollInterval(3000);
+    //setPollInterval(3000);
     setWidth(FULL_WIDTH);
 
     HorizontalLayout contentLayout = new HorizontalLayout();
@@ -115,6 +115,13 @@ public class PluploadDemo extends UI {
       }
     });
     addExample("Manual Submit Forced Slow using HTML4", upload, btn);
+
+    // Upload 7: Immediate submit with max size 1 MiB.
+    upload = buildPlupload();
+    upload.setImmediate(true);
+    upload.setButtonCaption("Upload w/Max");
+    upload.setMaxFileSize(1024 * 1024);
+    addExample("Immediate Submit with Max 1 MiB", upload);
 
     // Right column (log area)
     VerticalLayout rightColumnLayout = new VerticalLayout();
