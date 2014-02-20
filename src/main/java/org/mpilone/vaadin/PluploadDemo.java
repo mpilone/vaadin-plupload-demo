@@ -73,7 +73,7 @@ public class PluploadDemo extends UI {
     // Upload 4: Immediate submit forced slow.
     upload = buildPlupload();
     upload.setButtonCaption("Slow it Down");
-    upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
+    upload.setReceiver(new DemoReceiver(true));
     upload.setImmediate(true);
     final Plupload _upload4 = upload;
 
@@ -89,7 +89,7 @@ public class PluploadDemo extends UI {
     upload = buildPlupload();
     upload.setRuntimes(Plupload.Runtime.HTML4);
     upload.setButtonCaption("Slow and Old");
-    upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
+    upload.setReceiver(new DemoReceiver(true));
     upload.setImmediate(true);
     final Plupload _upload5 = upload;
 
@@ -105,7 +105,7 @@ public class PluploadDemo extends UI {
     upload = buildPlupload();
     upload.setRuntimes(Plupload.Runtime.HTML4);
     upload.setButtonCaption("Slow and Manual");
-    upload.setReceiver(new DemoReceiver(new SlowOutputStream()));
+    upload.setReceiver(new DemoReceiver(true));
     final Plupload _upload6 = upload;
 
     btn = new Button("Interrupt", new Button.ClickListener() {
@@ -186,7 +186,7 @@ public class PluploadDemo extends UI {
     upload.setMaxFileSize(500 * 1024 * 1024);
     upload.setMaxRetries(2);
     upload.setButtonCaption("Upload File");
-    upload.setReceiver(new DemoReceiver(new CountingDigestOutputStream()));
+    upload.setReceiver(new DemoReceiver(false));
 
     upload.addStartedListener(new Plupload.StartedListener() {
       @Override
@@ -266,13 +266,25 @@ public class PluploadDemo extends UI {
 
     private int count = 0;
     private MessageDigest md;
+    private boolean closed = false;
 
     public CountingDigestOutputStream() {
       reset();
     }
 
     @Override
+    public void close() throws IOException {
+      super.close();
+
+      closed = true;
+    }
+
+    @Override
     public void write(int b) throws IOException {
+      if (closed) {
+        throw new IOException("Output stream closed.");
+      }
+
       count++;
       md.update((byte) b);
     }
@@ -332,10 +344,12 @@ public class PluploadDemo extends UI {
    */
   private class DemoReceiver implements Upload.Receiver {
 
-    private final CountingDigestOutputStream outstream;
+    private final boolean slow;
+    private CountingDigestOutputStream outstream;
 
-    public DemoReceiver(CountingDigestOutputStream outstream) {
-      this.outstream = outstream;
+    public DemoReceiver(boolean slow) {
+      this.slow = slow;
+      this.outstream = null;
     }
 
     @Override
@@ -343,7 +357,10 @@ public class PluploadDemo extends UI {
       log("Creating receiver output stream for file %s and mime-type %s.",
           filename, mimeType);
 
-      return outstream;
+      this.outstream = slow ? new SlowOutputStream() :
+          new CountingDigestOutputStream();
+
+      return this.outstream;
     }
 
     public CountingDigestOutputStream getOutputStream() {
