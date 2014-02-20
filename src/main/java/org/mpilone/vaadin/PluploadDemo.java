@@ -181,8 +181,8 @@ public class PluploadDemo extends UI {
   private Plupload buildPlupload() {
 
     final Plupload upload = new Plupload();
-    upload.setChunkSize(512 * 1024);
-    upload.setMaxRetryBufferSize(upload.getChunkSize());
+    upload.setChunkSize(256 * 1024);
+    upload.setMaxRetryBufferSize((int) (upload.getChunkSize() * 1.2));
     upload.setMaxFileSize(500 * 1024 * 1024);
     upload.setMaxRetries(2);
     upload.setButtonCaption("Upload File");
