@@ -6,7 +6,7 @@
 
   <groupId>org.mpilone</groupId>
   <artifactId>vaadin-plupload-demo</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <packaging>war</packaging>
 
   <name>Vaadin Plupload Demo</name>
@@ -24,7 +24,7 @@
     <dependency>
       <groupId>org.mpilone</groupId>
       <artifactId>vaadin-plupload</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
     
     <dependency>
